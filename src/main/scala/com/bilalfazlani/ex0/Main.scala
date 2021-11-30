@@ -9,7 +9,32 @@ enum Direction:
 
 case class Order(command: Command, direction: Option[Direction] = None)
 
-def feed(command: Order) = println(command)
+object Robot{
+  enum State:
+    case Moving,Idle
+
+  var currentState:State = State.Idle
+  var direction: Option[Direction] = None
+
+  def feed(command: Order) = (currentState, command) match {
+      case (State.Moving, Order(Command.Stop, None)) => 
+        currentState = State.Idle
+        println("robot stopped")
+      case (State.Idle, Order(Command.Start, None)) =>
+        currentState = State.Moving
+        println("robot started")
+      case (State.Idle, Order(Command.Turn, Some(dir))) =>
+        direction = Some(dir)
+        println(s"robot now facing $dir")
+      case _ => 
+        Console.err.println("invalid command for given state")
+        sys.exit(1)
+    }
+}
+
 
 @main
-def run = feed(Order(Command.Turn, Some(Direction.East)))
+def run = 
+  Robot.feed(Order(Command.Start, Some(Direction.East)))
+  Robot.feed(Order(Command.Turn, Some(Direction.East)))
+  Robot.feed(Order(Command.Stop, None))
