@@ -26,8 +26,10 @@ object Robot{
       case (State.Idle, Order(Command.Turn, Some(dir))) =>
         direction = Some(dir)
         println(s"robot now facing $dir")
-      case _ => 
-        Console.err.println("invalid command for given state")
+      case (_, x) => 
+        Console.err.println(s"""invalid order for given state
+        current state: $currentState
+        order: $x""")
         sys.exit(1)
     }
 }
