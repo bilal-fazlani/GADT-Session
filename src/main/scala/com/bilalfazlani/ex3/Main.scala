@@ -16,7 +16,35 @@ import Command.*
 extension (command1: Command)
   infix def ~>(command2: Command) = Chain(command1, command2)
 
-def feed(commands: Command) = println(commands)
+object Robot{
+  enum State:
+    case Moving,Idle
+
+  var currentState:State = State.Idle
+  var direction: Option[Direction] = None
+
+  def feed(command: Command):Unit = (currentState, command) match {
+      case (_, Command.Chain(a,b)) =>
+        feed(a)
+        feed(b)
+      case (State.Moving, Command.Stop) => 
+        currentState = State.Idle
+        println("robot stopped")
+      case (State.Idle, Command.Start) =>
+        currentState = State.Moving
+        println("robot started")
+      case (State.Idle, Command.Turn(dir)) =>
+        direction = Some(dir)
+        println(s"robot now facing $dir")
+      case _ => 
+        Console.err.println("invalid command for given state")
+        sys.exit(1)
+    }
+}
 
 @main
-def run = feed(Turn(East) ~> Start ~> Stop)
+def run = 
+  println("-- feed 1")
+  Robot.feed(Turn(East) ~> Start ~> Stop)
+  println("-- feed 2")
+  Robot.feed(Turn(East) ~> Stop)
