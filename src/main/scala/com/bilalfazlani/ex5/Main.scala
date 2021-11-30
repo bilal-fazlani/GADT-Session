@@ -20,11 +20,35 @@ extension [A, B](command1: Command[A, B])
   infix def ~>[C](command2: Command[B, C]): Command[A, C] =
     Chain(command1, command2)
 
-def feed[A, B](commands: Command[A, B]) = println(commands)
+object Robot {
+  enum State:
+    case Moving,Idle
+  var currentState:State = State.Idle
+  var direction: Option[Direction] = None
 
-def feedFull(commands: Command[Idle, Idle]) = println(commands)
-
+  def feed[A,B](command: Command[A,B]):Unit = (currentState, command) match {
+      case (_, Chain(a,b)) =>
+        feed(a)
+        feed(b)
+      case (State.Moving, Stop) => 
+        currentState = State.Idle
+        println("robot stopped")
+      case (State.Idle, Start) =>
+        currentState = State.Moving
+        println("robot started")
+      case (_, Turn(dir)) =>
+        direction = Some(dir)
+        println(s"robot now facing $dir")
+      case (_, x) => 
+        Console.err.println(s"""invalid command for given state
+        current state: $currentState
+        command: $x""")
+        sys.exit(1)
+    }
+}
 @main
 def run = 
-  feed(Turn(East) ~> Start ~> Stop ~> Turn(East))
-  feedFull(Start ~> Turn(East) ~> Stop)
+  println("--feed 1")
+  Robot.feed(Turn(East) ~> Start ~> Stop ~> Start)
+  println("--feed 2")
+  Robot.feed(Turn(East) ~> Start ~> Stop)
