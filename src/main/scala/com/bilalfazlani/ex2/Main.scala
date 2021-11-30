@@ -10,12 +10,6 @@ enum Command:
   case Stop
   case Chain(command1: Command, command2: Command)
 
-object Chain{
-  def apply(command1: Command, command2: Command) = 
-    
-    Command.Chain(command1, command2)
-}
-
 import Direction.*
 import Command.*
 
